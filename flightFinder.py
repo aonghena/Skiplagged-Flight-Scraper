@@ -11,11 +11,11 @@ import csv
 #3 cheapest flight from each search
 
 #set up location to webdriver
-driver = webdriver.Chrome(executable_path='YOURPATHHERE')
+driver = webdriver.Chrome(executable_path='YOURLOCATIONHERE')
 
 #Change departure airport/city and file location if needed
 startCity = 'JFK'
-spreadsheet = csv.writer(open('flights.csv', 'w'), delimiter=',')
+spreadsheet = csv.writer(open('flights'+startCity+'.csv', 'w'), delimiter=',')
 
 spreadsheet.writerow(['Destination', 'Price', 'Depart Date', 'Return Date', 'Departure'])
 spreadsheet.writerow(['', '', '', '', ''])
@@ -43,7 +43,7 @@ for month in range(1,12):
                 tempMonth += 1
             buildURL = 'https://skiplagged.com/flights/'+str(startCity)+'/2019-'+str(month).zfill(2)+'-'+str(day).zfill(2)+'/2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2)
             driver.get(buildURL)
-            time.sleep(7)
+            time.sleep(5)
             #gets 3 cheapest flights (if found)
             for x in range(1,4):
                 try:
@@ -51,11 +51,11 @@ for month in range(1,12):
                     cityB = '#trip-list-skipsy-tiles > li:nth-child('+str(x)+') > a > div.tile-header > h2'
                     price = driver.find_element_by_css_selector(priceB).text.strip()
                     city = driver.find_element_by_css_selector(cityB).text.strip()
+                    city = ' '.join(city.split())
                     price = re.sub("[^\d\.]", "", price)
                     price = price[-3:].strip()
                     print(price[-3:] + ' ' + city + '\n'  )
                     spreadsheet.writerow([city, price, '2019-'+str(month).zfill(2)+'-'+str(day).zfill(2), '2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2), startCity])
                 except: 
                     print('no flights found for this date')
-            time.sleep(2)
             print('---')
