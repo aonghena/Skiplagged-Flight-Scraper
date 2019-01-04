@@ -1,6 +1,6 @@
 from selenium import webdriver
-from webbrowser import Chrome
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options
 import time
 import datetime
 import re
@@ -10,21 +10,32 @@ import csv
 #using selenium and writes them to an csv file
 #3 cheapest flight from each search
 
-#set up location to webdriver
-driver = webdriver.Chrome(executable_path='YOURLOCATIONHERE')
 
-#Change departure airport/city and file location if needed
+
+options = Options()
+options.add_argument("--headless")
+
+#set up location to webdriver
+#I am using Firefox, but can be switched to Chrome if preferred  
+driver = webdriver.Firefox(executable_path='C:\\Users\\Alex\\Documents\\workspace\\python\\geckodriver.exe', options=options)
+
+#Change departure airport/city and file location.
 startCity = 'JFK'
 spreadsheet = csv.writer(open('flights'+startCity+'.csv', 'w'), delimiter=',')
+#
 
-spreadsheet.writerow(['Destination', 'Price', 'Depart Date', 'Return Date', 'Departure'])
-spreadsheet.writerow(['', '', '', '', ''])
+spreadsheet.writerow(['Destination', 'Price', 'Depart Date', 'Return Date', 'Departure', 'URL'])
+spreadsheet.writerow(['', '', '', '', '', ''])
 
-for month in range(1,12):
-    print(month)
+
+for month in range(datetime.date.today().month,12):
+    print('month: ' + str(month))
     #used for 2019 eom calendar year
     monthEnd = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    for day in range(1,monthEnd[month]):
+    start = 1
+    if(datetime.date.today().day == month):
+        start = datetime.date.today().day
+    for day in range(start,monthEnd[month]):
         #week day calc
         weekDay = datetime.date(2019, month, day).isoweekday()
         expDay = weekDay - 5
@@ -49,13 +60,16 @@ for month in range(1,12):
                 try:
                     priceB = '#trip-list-skipsy-tiles > li:nth-child('+str(x)+') > a > div.tile-header > div'
                     cityB = '#trip-list-skipsy-tiles > li:nth-child('+str(x)+') > a > div.tile-header > h2'
+                    urlB = '#trip-list-skipsy-tiles > li:nth-child('+str(x)+') > a'
                     price = driver.find_element_by_css_selector(priceB).text.strip()
                     city = driver.find_element_by_css_selector(cityB).text.strip()
+                    urlC = driver.find_element_by_css_selector(urlB).get_property('href')
                     city = ' '.join(city.split())
                     price = re.sub("[^\d\.]", "", price)
                     price = price[-3:].strip()
                     print(price[-3:] + ' ' + city + '\n'  )
-                    spreadsheet.writerow([city, price, '2019-'+str(month).zfill(2)+'-'+str(day).zfill(2), '2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2), startCity])
+                    spreadsheet.writerow([city, price, '2019-'+str(month).zfill(2)+'-'+str(day).zfill(2), '2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2), startCity, str(urlC)])
                 except: 
                     print('no flights found for this date')
             print('---')
+driver.close()
