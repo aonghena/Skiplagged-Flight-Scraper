@@ -17,15 +17,15 @@ options.add_argument("--headless")
 
 #set up location to webdriver
 #I am using Firefox, but can be switched to Chrome if preferred  
-driver = webdriver.Firefox(executable_path='C:\\Users\\Alex\\Documents\\workspace\\python\\geckodriver.exe', options=options)
+driver = webdriver.Firefox(executable_path='YOUR_PATH_HERE', options=options)
 
 #Change departure airport/city and file location.
 startCity = 'JFK'
 spreadsheet = csv.writer(open('flights'+startCity+'.csv', 'w'), delimiter=',')
-#
 
-spreadsheet.writerow(['Destination', 'Price', 'Depart Date', 'Return Date', 'Departure', 'URL'])
-spreadsheet.writerow(['', '', '', '', '', ''])
+
+spreadsheet.writerow(['Destination', 'Price', 'Nights','Depart Date', 'Return Date', 'Departure', 'URL'])
+spreadsheet.writerow(['', '', '', '', '','' , ''])
 
 
 for month in range(datetime.date.today().month,12):
@@ -33,9 +33,10 @@ for month in range(datetime.date.today().month,12):
     #used for 2019 eom calendar year
     monthEnd = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     start = 1
-    if(datetime.date.today().day == month):
+    if(datetime.date.today().month == month):
         start = datetime.date.today().day
     for day in range(start,monthEnd[month]):
+        print('day= '+str(day))
         #week day calc
         weekDay = datetime.date(2019, month, day).isoweekday()
         expDay = weekDay - 5
@@ -54,7 +55,7 @@ for month in range(datetime.date.today().month,12):
                 tempMonth += 1
             buildURL = 'https://skiplagged.com/flights/'+str(startCity)+'/2019-'+str(month).zfill(2)+'-'+str(day).zfill(2)+'/2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2)
             driver.get(buildURL)
-            time.sleep(5)
+            time.sleep(3)
             #gets 3 cheapest flights (if found)
             for x in range(1,4):
                 try:
@@ -68,8 +69,9 @@ for month in range(datetime.date.today().month,12):
                     price = re.sub("[^\d\.]", "", price)
                     price = price[-3:].strip()
                     print(price[-3:] + ' ' + city + '\n'  )
-                    spreadsheet.writerow([city, price, '2019-'+str(month).zfill(2)+'-'+str(day).zfill(2), '2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2), startCity, str(urlC)])
+                    spreadsheet.writerow([city, price, str(tempday-day),'2019-'+str(month).zfill(2)+'-'+str(day).zfill(2), '2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2), startCity, str(urlC)])
                 except: 
                     print('no flights found for this date')
+                    print(buildURL)
             print('---')
 driver.close()
