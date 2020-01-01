@@ -6,21 +6,18 @@ import datetime
 import re
 import csv
 
-#Finds cheapest weekend flights for the 2019 calendar year
-#using selenium and writes them to an csv file
+#Finds cheapest weekend flights for the 2020 calendar year
 #3 cheapest flight from each search
-
-
 
 options = Options()
 options.add_argument("--headless")
 
 #set up location to webdriver
-#I am using Firefox, but can be switched to Chrome if preferred  
 driver = webdriver.Firefox(executable_path='YOUR_PATH_HERE', options=options)
 
 #Change departure airport/city and file location.
 startCity = 'JFK'
+YEAR = 2020
 spreadsheet = csv.writer(open('flights'+startCity+'.csv', 'w'), delimiter=',')
 
 
@@ -28,17 +25,16 @@ spreadsheet.writerow(['Destination', 'Price', 'Nights','Depart Date', 'Return Da
 spreadsheet.writerow(['', '', '', '', '','' , ''])
 
 
-for month in range(datetime.date.today().month,12):
+for month in range(datetime.date.today().month,13):
     print('month: ' + str(month))
-    #used for 2019 eom calendar year
-    monthEnd = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    monthEnd = [-1, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] #2020 Calendar Year
     start = 1
     if(datetime.date.today().month == month):
         start = datetime.date.today().day
     for day in range(start,monthEnd[month]):
         print('day= '+str(day))
         #week day calc
-        weekDay = datetime.date(2019, month, day).isoweekday()
+        weekDay = datetime.date(YEAR, month, day).isoweekday()
         expDay = weekDay - 5
         if(expDay == 0):
             expDay = 3
@@ -53,7 +49,7 @@ for month in range(datetime.date.today().month,12):
             if(tempday > monthEnd[month]):
                 tempday = 1
                 tempMonth += 1
-            buildURL = 'https://skiplagged.com/flights/'+str(startCity)+'/2019-'+str(month).zfill(2)+'-'+str(day).zfill(2)+'/2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2)
+            buildURL = 'https://skiplagged.com/flights/'+str(startCity)+'/'+str(YEAR)+'-'+str(month).zfill(2)+'-'+str(day).zfill(2)+'/'+str(YEAR)+'-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2)
             driver.get(buildURL)
             time.sleep(3)
             #gets 3 cheapest flights (if found)
@@ -69,7 +65,7 @@ for month in range(datetime.date.today().month,12):
                     price = re.sub("[^\d\.]", "", price)
                     price = price[-3:].strip()
                     print(price[-3:] + ' ' + city + '\n'  )
-                    spreadsheet.writerow([city, price, str(tempday-day),'2019-'+str(month).zfill(2)+'-'+str(day).zfill(2), '2019-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2), startCity, str(urlC)])
+                    spreadsheet.writerow([city, price, str(tempday-day),str(YEAR)+'-'+str(month).zfill(2)+'-'+str(day).zfill(2), str(YEAR)+'-'+str(tempMonth).zfill(2)+'-'+str(tempday).zfill(2), startCity, str(urlC)])
                 except: 
                     print('no flights found for this date')
                     print(buildURL)
